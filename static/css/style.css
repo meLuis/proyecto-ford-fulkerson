@@ -438,24 +438,18 @@ header p {
     cursor: pointer;
 }
 
-.edge path {
-    fill: none;
+.edge line {
     stroke: var(--secondary-color);
     stroke-width: 2px;
     transition: all 0.3s ease;
 }
 
-.edge.bidirectional path {
-    stroke-dasharray: none;
-    stroke-width: 2.5px;
-}
-
-.edge.highlighted path {
+.edge.highlighted line {
     stroke: var(--warning-color);
     stroke-width: 4px;
 }
 
-.edge.cut path {
+.edge.cut line {
     stroke: var(--danger-color);
     stroke-width: 3px;
     stroke-dasharray: 5,5;

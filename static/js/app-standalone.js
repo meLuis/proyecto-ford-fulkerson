@@ -156,63 +156,15 @@ function eliminarArista(index) {
     actualizarListaAristas();
 }
 
-// Función para procesar aristas bidireccionales
-function procesarAristasBidireccionales(aristas) {
-    const enlaces = [];
-    const procesados = new Set();
-
-    aristas.forEach((arista, index) => {
-        const key1 = `${arista.origen}-${arista.destino}`;
-        const key2 = `${arista.destino}-${arista.origen}`;
-        
-        if (procesados.has(key1) || procesados.has(key2)) {
-            return; // Ya procesada
-        }
-
-        // Buscar arista inversa
-        const aristaInversa = aristas.find(a => 
-            a.origen === arista.destino && a.destino === arista.origen
-        );
-
-        if (aristaInversa) {
-            // Arista bidireccional - crear dos enlaces curvados
-            enlaces.push({
-                source: arista.origen,
-                target: arista.destino,
-                capacidad: arista.capacidad,
-                flujo: arista.flujo || 0,
-                esBidireccional: true,
-                direccion: 'forward',
-                id: `${arista.origen}-${arista.destino}`
-            });
-            
-            enlaces.push({
-                source: arista.destino,
-                target: arista.origen,
-                capacidad: aristaInversa.capacidad,
-                flujo: aristaInversa.flujo || 0,
-                esBidireccional: true,
-                direccion: 'backward',
-                id: `${arista.destino}-${arista.origen}`
-            });
-
-            procesados.add(key1);
-            procesados.add(key2);
-        } else {
-            // Arista unidireccional normal
-            enlaces.push({
-                source: arista.origen,
-                target: arista.destino,
-                capacidad: arista.capacidad,
-                flujo: arista.flujo || 0,
-                esBidireccional: false,
-                id: key1
-            });
-            procesados.add(key1);
-        }
-    });
-
-    return enlaces;
+// Función simple para procesar aristas - una arista = un enlace
+function procesarAristas(aristas) {
+    return aristas.map(arista => ({
+        source: arista.origen,
+        target: arista.destino,
+        capacidad: arista.capacidad,
+        flujo: arista.flujo || 0,
+        id: `${arista.origen}-${arista.destino}`
+    }));
 }
 
 function generarGrafo() {
@@ -385,7 +337,7 @@ function mostrarGrafo(grafo) {
     }));
 
     // Procesar aristas para detectar bidireccionales
-    const enlaces = procesarAristasBidireccionales(grafo.aristas);
+    const enlaces = procesarAristas(grafo.aristas);
 
     // Simulación de fuerza
     const simulation = d3.forceSimulation(nodos)
@@ -409,30 +361,21 @@ function mostrarGrafo(grafo) {
         .attr('d', 'M0,-5L10,0L0,5')
         .attr('fill', '#64748b');
 
-    // Crear enlaces
+    // Crear enlaces simples
     const link = svg.append('g')
         .selectAll('g')
         .data(enlaces)
         .enter().append('g')
         .attr('class', 'edge');
 
-    link.append('path')
+    link.append('line')
         .attr('marker-end', 'url(#arrowhead)')
-        .attr('fill', 'none')
         .attr('stroke', '#64748b')
         .attr('stroke-width', 2);
 
-    // Etiquetas de capacidad/flujo con mejor posicionamiento
+    // Etiquetas simples de capacidad/flujo
     link.append('text')
-        .text(d => {
-            // Mostrar dirección para aristas bidireccionales
-            if (d.esBidireccional) {
-                const arrow = d.direccion === 'forward' ? '→' : '←';
-                return `${arrow} ${d.flujo}/${d.capacidad}`;
-            } else {
-                return `${d.flujo}/${d.capacidad}`;
-            }
-        })
+        .text(d => `${d.flujo}/${d.capacidad}`)
         .attr('class', 'edge-label')
         .attr('font-size', '11px')
         .attr('font-weight', 'bold')
@@ -456,61 +399,19 @@ function mostrarGrafo(grafo) {
     node.append('text')
         .text(d => d.id + 1);
 
-    // Actualizar posiciones en cada tick
+    // Actualizar posiciones en cada tick (simplificado)
     simulation.on('tick', () => {
-        link.select('path')
-            .attr('d', d => {
-                if (d.esBidireccional) {
-                    // Crear arista curva para bidireccionales con mayor curvatura
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const dr = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Curva en direcciones opuestas para forward/backward
-                    const sweep = d.direccion === 'forward' ? 0 : 1;
-                    const curvature = Math.max(dr * 0.5, 60); // Mayor curvatura
-                    
-                    return `M${d.source.x},${d.source.y}A${curvature},${curvature} 0 0,${sweep} ${d.target.x},${d.target.y}`;
-                } else {
-                    // Línea recta para unidireccionales
-                    return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
-                }
-            });
+        // Líneas simples para todos los enlaces
+        link.select('line')
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
 
+        // Etiquetas centradas en las líneas
         link.select('text')
-            .attr('x', d => {
-                if (d.esBidireccional) {
-                    // Posicionar texto en la curva con separación clara según dirección
-                    const midX = (d.source.x + d.target.x) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (length === 0) return midX;
-                    
-                    // Separación mayor y más consistente
-                    const offset = d.direccion === 'forward' ? -35 : 35;
-                    return midX + (dy / length) * offset;
-                } else {
-                    return (d.source.x + d.target.x) / 2;
-                }
-            })
-            .attr('y', d => {
-                if (d.esBidireccional) {
-                    const midY = (d.source.y + d.target.y) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (length === 0) return midY - 5;
-                    
-                    // Separación mayor y más consistente
-                    const offset = d.direccion === 'forward' ? -35 : 35;
-                    return midY - (dx / length) * offset;
-                } else {
-                    return (d.source.y + d.target.y) / 2 - 5;
-                }
-            });
+            .attr('x', d => (d.source.x + d.target.x) / 2)
+            .attr('y', d => (d.source.y + d.target.y) / 2 - 5);
 
         node.attr('transform', d => `translate(${d.x},${d.y})`);
     });

@@ -158,11 +158,17 @@ class Grafo:
 
 def construir_grafo_aleatorio(n):
     g = Grafo(n)
+    # Conjunto para evitar aristas bidirectas
+    aristas_agregadas = set()
+    
     for u in range(n):
         for v in range(n):
-            if u != v and random.random() < 0.3:  
-                capacidad = random.randint(1, 20)
-                g.agregar_arista(u, v, capacidad)
+            if u != v and random.random() < 0.3:
+                # Verificar que no exista ya una arista en cualquier dirección
+                if (u, v) not in aristas_agregadas and (v, u) not in aristas_agregadas:
+                    capacidad = random.randint(1, 20)
+                    g.agregar_arista(u, v, capacidad)
+                    aristas_agregadas.add((u, v))
     return g
 
 @app.route('/')
