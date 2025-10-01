@@ -424,7 +424,15 @@ function mostrarGrafo(grafo) {
 
     // Etiquetas de capacidad/flujo con mejor posicionamiento
     link.append('text')
-        .text(d => `${d.flujo}/${d.capacidad}`)
+        .text(d => {
+            // Mostrar dirección para aristas bidireccionales
+            if (d.esBidireccional) {
+                const arrow = d.direccion === 'forward' ? '→' : '←';
+                return `${arrow} ${d.flujo}/${d.capacidad}`;
+            } else {
+                return `${d.flujo}/${d.capacidad}`;
+            }
+        })
         .attr('class', 'edge-label')
         .attr('font-size', '11px')
         .attr('font-weight', 'bold')
@@ -453,14 +461,14 @@ function mostrarGrafo(grafo) {
         link.select('path')
             .attr('d', d => {
                 if (d.esBidireccional) {
-                    // Crear arista curva para bidireccionales
+                    // Crear arista curva para bidireccionales con mayor curvatura
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
                     const dr = Math.sqrt(dx * dx + dy * dy);
                     
                     // Curva en direcciones opuestas para forward/backward
                     const sweep = d.direccion === 'forward' ? 0 : 1;
-                    const curvature = Math.max(dr * 0.4, 50); // Aumentar curvatura mínima
+                    const curvature = Math.max(dr * 0.5, 60); // Mayor curvatura
                     
                     return `M${d.source.x},${d.source.y}A${curvature},${curvature} 0 0,${sweep} ${d.target.x},${d.target.y}`;
                 } else {
@@ -472,13 +480,17 @@ function mostrarGrafo(grafo) {
         link.select('text')
             .attr('x', d => {
                 if (d.esBidireccional) {
-                    // Posicionar texto en la curva con mayor separación
+                    // Posicionar texto en la curva con separación clara según dirección
                     const midX = (d.source.x + d.target.x) / 2;
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -25 : 25; // Aumentar separación
                     const length = Math.sqrt(dx*dx + dy*dy);
-                    return length > 0 ? midX + (dy / length) * offset : midX;
+                    
+                    if (length === 0) return midX;
+                    
+                    // Separación mayor y más consistente
+                    const offset = d.direccion === 'forward' ? -35 : 35;
+                    return midX + (dy / length) * offset;
                 } else {
                     return (d.source.x + d.target.x) / 2;
                 }
@@ -488,9 +500,13 @@ function mostrarGrafo(grafo) {
                     const midY = (d.source.y + d.target.y) / 2;
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -25 : 25; // Aumentar separación
                     const length = Math.sqrt(dx*dx + dy*dy);
-                    return length > 0 ? midY - (dx / length) * offset : midY - 5;
+                    
+                    if (length === 0) return midY - 5;
+                    
+                    // Separación mayor y más consistente
+                    const offset = d.direccion === 'forward' ? -35 : 35;
+                    return midY - (dx / length) * offset;
                 } else {
                     return (d.source.y + d.target.y) / 2 - 5;
                 }
