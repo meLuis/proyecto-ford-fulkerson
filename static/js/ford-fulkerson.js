@@ -167,17 +167,49 @@ class GrafoJS {
     }
 }
 
-// Función para generar grafo aleatorio
+// Función para generar grafo aleatorio con aristas bidireccionales
 function construirGrafoAleatorioJS(n) {
     const g = new GrafoJS(n);
+    const aristasPosibles = [];
+    
+    // Generar todas las posibles conexiones
     for (let u = 0; u < n; u++) {
-        for (let v = 0; v < n; v++) {
-            if (u !== v && Math.random() < 0.3) {
-                const capacidad = Math.floor(Math.random() * 20) + 1;
+        for (let v = u + 1; v < n; v++) {
+            aristasPosibles.push([u, v]);
+        }
+    }
+    
+    // Mezclar array para orden aleatorio
+    for (let i = aristasPosibles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [aristasPosibles[i], aristasPosibles[j]] = [aristasPosibles[j], aristasPosibles[i]];
+    }
+    
+    // Seleccionar algunas conexiones
+    const numAristas = Math.floor(aristasPosibles.length * 0.4); // Más aristas
+    
+    for (let i = 0; i < numAristas && i < aristasPosibles.length; i++) {
+        const [u, v] = aristasPosibles[i];
+        
+        // 60% probabilidad de arista bidireccional
+        if (Math.random() < 0.6) {
+            // Bidireccional
+            const capacidad1 = Math.floor(Math.random() * 15) + 5;
+            const capacidad2 = Math.floor(Math.random() * 15) + 5;
+            g.agregarArista(u, v, capacidad1);
+            g.agregarArista(v, u, capacidad2);
+        } else {
+            // Unidireccional
+            const capacidad = Math.floor(Math.random() * 20) + 1;
+            const direccion = Math.random() < 0.5;
+            if (direccion) {
                 g.agregarArista(u, v, capacidad);
+            } else {
+                g.agregarArista(v, u, capacidad);
             }
         }
     }
+    
     return g;
 }
 

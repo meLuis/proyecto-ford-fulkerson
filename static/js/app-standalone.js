@@ -460,7 +460,7 @@ function mostrarGrafo(grafo) {
                     
                     // Curva en direcciones opuestas para forward/backward
                     const sweep = d.direccion === 'forward' ? 0 : 1;
-                    const curvature = dr * 0.3; // Ajustar curvatura
+                    const curvature = Math.max(dr * 0.4, 50); // Aumentar curvatura mínima
                     
                     return `M${d.source.x},${d.source.y}A${curvature},${curvature} 0 0,${sweep} ${d.target.x},${d.target.y}`;
                 } else {
@@ -472,12 +472,13 @@ function mostrarGrafo(grafo) {
         link.select('text')
             .attr('x', d => {
                 if (d.esBidireccional) {
-                    // Posicionar texto en la curva
+                    // Posicionar texto en la curva con mayor separación
                     const midX = (d.source.x + d.target.x) / 2;
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -15 : 15;
-                    return midX + (dy / Math.sqrt(dx*dx + dy*dy)) * offset;
+                    const offset = d.direccion === 'forward' ? -25 : 25; // Aumentar separación
+                    const length = Math.sqrt(dx*dx + dy*dy);
+                    return length > 0 ? midX + (dy / length) * offset : midX;
                 } else {
                     return (d.source.x + d.target.x) / 2;
                 }
@@ -487,8 +488,9 @@ function mostrarGrafo(grafo) {
                     const midY = (d.source.y + d.target.y) / 2;
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -15 : 15;
-                    return midY - (dx / Math.sqrt(dx*dx + dy*dy)) * offset;
+                    const offset = d.direccion === 'forward' ? -25 : 25; // Aumentar separación
+                    const length = Math.sqrt(dx*dx + dy*dy);
+                    return length > 0 ? midY - (dx / length) * offset : midY - 5;
                 } else {
                     return (d.source.y + d.target.y) / 2 - 5;
                 }
