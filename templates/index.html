@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmo Ford-Fulkerson - Flujo Máximo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌊 Algoritmo Ford-Fulkerson</h1>
+            <p>Visualización interactiva del problema de flujo máximo</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Panel de configuración -->
+            <div class="panel config-panel">
+                <h2>📋 Configuración del Grafo</h2>
+                
+                <div class="form-group">
+                    <label for="nodos">Número de nodos (8-16):</label>
+                    <input type="number" id="nodos" min="8" max="16" value="8">
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de grafo:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="aleatorio" name="tipo" value="aleatorio" checked>
+                        <label for="aleatorio">🎲 Aleatorio</label>
+                        
+                        <input type="radio" id="manual" name="tipo" value="manual">
+                        <label for="manual">✏️ Manual</label>
+                    </div>
+                </div>
+
+                <!-- Panel para entrada manual -->
+                <div id="manual-panel" class="hidden">
+                    <h3>✏️ Agregar Aristas Manualmente</h3>
+                    <div class="manual-help">
+                        <p><strong>💡 Instrucciones:</strong></p>
+                        <ul>
+                            <li>Agrega las conexiones entre nodos una por una</li>
+                            <li>Los nodos se numeran del 1 al <span id="max-nodo">8</span></li>
+                            <li>Puedes crear aristas en ambas direcciones si lo necesitas</li>
+                            <li>La capacidad debe ser un número positivo</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="arista-input">
+                        <div class="input-group">
+                            <label for="origen">Origen:</label>
+                            <input type="number" id="origen" placeholder="Ej: 1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="destino">Destino:</label>
+                            <input type="number" id="destino" placeholder="Ej: 2" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="capacidad">Capacidad:</label>
+                            <input type="number" id="capacidad" placeholder="Ej: 10" min="1">
+                        </div>
+                        <button id="agregar-arista" class="btn btn-secondary">➕ Agregar</button>
+                    </div>
+                    
+                    <div id="aristas-lista">
+                        <h4>📋 Aristas agregadas:</h4>
+                        <div class="aristas-container">
+                            <div id="aristas-empty" class="empty-state">
+                                <p>Aún no has agregado ninguna arista</p>
+                                <p>👆 Usa el formulario de arriba para comenzar</p>
+                            </div>
+                            <ul id="lista-aristas"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generar-grafo" class="btn btn-primary">🔄 Generar Grafo</button>
+            </div>
+
+            <!-- Panel de visualización -->
+            <div class="panel visualization-panel">
+                <h2>🕸️ Visualización del Grafo</h2>
+                <div id="graph-container">
+                    <svg id="graph-svg"></svg>
+                </div>
+                
+                <div id="graph-info" class="hidden">
+                    <div class="info-row">
+                        <div class="form-group">
+                            <label for="fuente">Nodo fuente:</label>
+                            <select id="fuente"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sumidero">Nodo sumidero:</label>
+                            <select id="sumidero"></select>
+                        </div>
+                        <button id="calcular-flujo" class="btn btn-success">🚀 Calcular Flujo Máximo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de resultados -->
+        <div id="results-panel" class="panel hidden">
+            <h2>📊 Resultados del Algoritmo</h2>
+            
+            <div class="results-summary">
+                <div class="result-card">
+                    <h3>Flujo Máximo</h3>
+                    <div id="flujo-maximo" class="big-number">0</div>
+                </div>
+                <div class="result-card">
+                    <h3>Iteraciones</h3>
+                    <div id="num-iteraciones" class="big-number">0</div>
+                </div>
+            </div>
+
+            <div class="algorithm-steps">
+                <h3>🔍 Pasos del Algoritmo</h3>
+                <div class="controls">
+                    <button id="paso-anterior" class="btn btn-secondary">⬅️ Anterior</button>
+                    <span id="paso-actual">Paso 0 de 0</span>
+                    <button id="paso-siguiente" class="btn btn-secondary">➡️ Siguiente</button>
+                    <button id="auto-play" class="btn btn-primary">▶️ Auto</button>
+                </div>
+                <div id="paso-descripcion" class="step-description"></div>
+            </div>
+
+            <div class="cut-info">
+                <h3>✂️ Corte Mínimo</h3>
+                <div id="corte-descripcion"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
