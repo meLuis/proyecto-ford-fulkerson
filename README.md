@@ -226,58 +226,6 @@ def edmonds_karp(grafo, fuente, sumidero):
 
 ---
 
-## 🌟 Capturas de Pantalla
-
-### Interfaz Principal
-![Interfaz Principal](docs/screenshot-main.png)
-
-### Visualización del Algoritmo
-![Algoritmo Paso a Paso](docs/screenshot-algorithm.png)
-
-### Modo Manual
-![Modo Manual](docs/screenshot-manual.png)
-
----
-
-## 🚀 Deployment
-
-### Netlify (Recomendado)
-```bash
-# 1. Build para producción
-npm run build
-
-# 2. Deploy en Netlify
-netlify deploy --prod --dir=dist
-```
-
-### Heroku
-```bash
-# 1. Crear Procfile
-echo "web: gunicorn app:app" > Procfile
-
-# 2. Deploy
-git push heroku main
-```
-
----
-
-## 🤝 Contribuciones
-
-Las contribuciones son bienvenidas. Para cambios importantes:
-
-1. **Fork** el proyecto
-2. **Crea** tu feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la branch (`git push origin feature/AmazingFeature`)
-5. **Abre** un Pull Request
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
----
 
 ## 🙏 Agradecimientos
 
@@ -290,18 +238,16 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 ## 📞 Contacto
 
-**Equipo de Desarrollo** - [Repositorio del Proyecto](https://github.com/tu-usuario/ford-fulkerson-visualizer)
+**Equipo de Desarrollo** - [Repositorio del Proyecto](https://github.com/meLuis/proyecto-ford-fulkerson)
 
 **Universidad**: Universidad Peruana de Ciencias Aplicadas (UPC)
-**Curso**: Complejidad Algorítmica
-**Ciclo**: 2024-2
+**Curso**: Matemática Computacional
+**Ciclo**: 2025-2
 
 ---
 
 <div align="center">
 
 **⭐ Si este proyecto te ayudó, considera darle una estrella ⭐**
-
-![Desarrollado con ❤️ en Perú](https://img.shields.io/badge/Desarrollado_con_❤️_en-Perú-red?style=for-the-badge)
 
 </div>
