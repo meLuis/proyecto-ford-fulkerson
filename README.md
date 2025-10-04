@@ -135,7 +135,7 @@ ford-fulkerson-visualizer/
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/tu-usuario/ford-fulkerson-visualizer.git
+git clone https://github.com/meLuis/ford-fulkerson-visualizer.git
 cd ford-fulkerson-visualizer
 ```
 
