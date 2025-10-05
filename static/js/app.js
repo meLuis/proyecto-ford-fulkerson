@@ -153,63 +153,15 @@ function eliminarArista(index) {
     actualizarListaAristas();
 }
 
-// Función para procesar aristas bidireccionales
-function procesarAristasBidireccionales(aristas) {
-    const enlaces = [];
-    const procesados = new Set();
-
-    aristas.forEach((arista, index) => {
-        const key1 = `${arista.origen}-${arista.destino}`;
-        const key2 = `${arista.destino}-${arista.origen}`;
-        
-        if (procesados.has(key1) || procesados.has(key2)) {
-            return; // Ya procesada
-        }
-
-        // Buscar arista inversa
-        const aristaInversa = aristas.find(a => 
-            a.origen === arista.destino && a.destino === arista.origen
-        );
-
-        if (aristaInversa) {
-            // Arista bidireccional - crear dos enlaces curvados
-            enlaces.push({
-                source: arista.origen,
-                target: arista.destino,
-                capacidad: arista.capacidad,
-                flujo: arista.flujo || 0,
-                esBidireccional: true,
-                direccion: 'forward',
-                id: `${arista.origen}-${arista.destino}`
-            });
-            
-            enlaces.push({
-                source: arista.destino,
-                target: arista.origen,
-                capacidad: aristaInversa.capacidad,
-                flujo: aristaInversa.flujo || 0,
-                esBidireccional: true,
-                direccion: 'backward',
-                id: `${arista.destino}-${arista.origen}`
-            });
-
-            procesados.add(key1);
-            procesados.add(key2);
-        } else {
-            // Arista unidireccional normal
-            enlaces.push({
-                source: arista.origen,
-                target: arista.destino,
-                capacidad: arista.capacidad,
-                flujo: arista.flujo || 0,
-                esBidireccional: false,
-                id: key1
-            });
-            procesados.add(key1);
-        }
-    });
-
-    return enlaces;
+// Función simple para procesar aristas - una arista = un enlace (unidireccional)
+function procesarAristas(aristas) {
+    return aristas.map(arista => ({
+        source: arista.origen,
+        target: arista.destino,
+        capacidad: arista.capacidad,
+        flujo: arista.flujo || 0,
+        id: `${arista.origen}-${arista.destino}`
+    }));
 }
 
 async function generarGrafo() {
@@ -273,8 +225,8 @@ function mostrarGrafo(grafo) {
         y: null
     }));
 
-    // Procesar aristas para detectar bidireccionales
-    const enlaces = procesarAristasBidireccionales(grafo.aristas);
+    // Procesar aristas en forma unidireccional
+    const enlaces = procesarAristas(grafo.aristas);
 
     // Simulación de fuerza
     const simulation = d3.forceSimulation(nodos)
@@ -298,20 +250,19 @@ function mostrarGrafo(grafo) {
         .attr('d', 'M0,-5L10,0L0,5')
         .attr('fill', '#64748b');
 
-    // Crear enlaces
+    // Crear enlaces simples (líneas) y etiquetas
     const link = svg.append('g')
         .selectAll('g')
         .data(enlaces)
         .enter().append('g')
         .attr('class', 'edge');
 
-    link.append('path')
+    link.append('line')
         .attr('marker-end', 'url(#arrowhead)')
-        .attr('fill', 'none')
         .attr('stroke', '#64748b')
         .attr('stroke-width', 2);
 
-    // Etiquetas de capacidad/flujo con mejor posicionamiento
+    // Etiquetas simples de capacidad/flujo
     link.append('text')
         .text(d => `${d.flujo}/${d.capacidad}`)
         .attr('class', 'edge-label')
@@ -339,49 +290,15 @@ function mostrarGrafo(grafo) {
 
     // Actualizar posiciones en cada tick
     simulation.on('tick', () => {
-        link.select('path')
-            .attr('d', d => {
-                if (d.esBidireccional) {
-                    // Crear arista curva para bidireccionales
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const dr = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Curva en direcciones opuestas para forward/backward
-                    const sweep = d.direccion === 'forward' ? 0 : 1;
-                    const curvature = dr * 0.3; // Ajustar curvatura
-                    
-                    return `M${d.source.x},${d.source.y}A${curvature},${curvature} 0 0,${sweep} ${d.target.x},${d.target.y}`;
-                } else {
-                    // Línea recta para unidireccionales
-                    return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
-                }
-            });
+        link.select('line')
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
 
         link.select('text')
-            .attr('x', d => {
-                if (d.esBidireccional) {
-                    // Posicionar texto en la curva
-                    const midX = (d.source.x + d.target.x) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -15 : 15;
-                    return midX + (dy / Math.sqrt(dx*dx + dy*dy)) * offset;
-                } else {
-                    return (d.source.x + d.target.x) / 2;
-                }
-            })
-            .attr('y', d => {
-                if (d.esBidireccional) {
-                    const midY = (d.source.y + d.target.y) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const offset = d.direccion === 'forward' ? -15 : 15;
-                    return midY - (dx / Math.sqrt(dx*dx + dy*dy)) * offset;
-                } else {
-                    return (d.source.y + d.target.y) / 2 - 5;
-                }
-            });
+            .attr('x', d => (d.source.x + d.target.x) / 2)
+            .attr('y', d => (d.source.y + d.target.y) / 2 - 5);
 
         node.attr('transform', d => `translate(${d.x},${d.y})`);
     });
