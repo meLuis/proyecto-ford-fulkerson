@@ -226,8 +226,8 @@ function mostrarGrafo(grafo) {
         y: null
     }));
 
-    // Procesar aristas para detectar bidireccionales
-    const enlaces = procesarAristasBidireccionales(grafo.aristas);
+    // Procesar aristas en forma unidireccional
+    const enlaces = procesarAristas(grafo.aristas);
 
     // Simulación de fuerza
     const simulation = d3.forceSimulation(nodos)
