@@ -81,7 +81,7 @@ El programa debe:
 
 - ![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white) **Flask 2.3+**
   - Servidor web ligero y eficiente
-  - Endpoints para generación y procesamiento
+  - Endpoints para generación y procesamiento de datos
   - Manejo de sesiones y estados
 
 ### Frontend
