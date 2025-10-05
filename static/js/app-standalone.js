@@ -336,7 +336,7 @@ function mostrarGrafo(grafo) {
         y: null
     }));
 
-    // Procesar aristas para detectar bidireccionales
+    // Procesar aristas (unidireccional): cada arista original se representa como un enlace
     const enlaces = procesarAristas(grafo.aristas);
 
     // Simulación de fuerza
@@ -346,7 +346,7 @@ function mostrarGrafo(grafo) {
         .force('center', d3.forceCenter(width / 2, height / 2))
         .force('collision', d3.forceCollide().radius(35));
 
-    // Crear marcadores para flechas
+    // Crear marcadores para flechas (no se usan para curvas)
     const defs = svg.append('defs');
     
     defs.append('marker')

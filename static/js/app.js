@@ -153,8 +153,8 @@ function eliminarArista(index) {
     actualizarListaAristas();
 }
 
-// Función para procesar aristas bidireccionales
-// Función simple para procesar aristas - una arista = un enlace (unidireccional)
+// Procesar aristas (unidireccional): cada arista original se representa como un enlace
+// Nota: el generador y el backend evitan crear pares A->B y B->A automáticamente.
 function procesarAristas(aristas) {
     return aristas.map(arista => ({
         source: arista.origen,

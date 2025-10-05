@@ -59,8 +59,8 @@ El programa debe:
 ### 🔧 Funcionalidades Avanzadas
 - **Generación automática** de grafos aleatorios
 - **Entrada manual** con validaciones en tiempo real
-- **Detección inteligente** de aristas bidireccionales
-- **Visualización curva** para evitar solapamientos
+- El generador evita crear aristas duplicadas en sentido inverso (no se crean A→B y B→A automáticamente)
+- Visualización con líneas rectas y etiquetas en el punto medio para mantener claridad
 - **Cálculo automático** del corte mínimo
 
 ### 🎮 Experiencia de Usuario
