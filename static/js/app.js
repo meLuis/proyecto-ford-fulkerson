@@ -27,8 +27,9 @@ function inicializarEventos() {
     document.getElementById('paso-siguiente').addEventListener('click', () => cambiarPaso(1));
     document.getElementById('auto-play').addEventListener('click', toggleAutoPlay);
 
-    // Validaciones en tiempo real
-    document.getElementById('nodos').addEventListener('input', validarNumeroNodos);
+    // Validación al salir del campo (blur) en vez de en cada tecla (input)
+    document.getElementById('nodos').addEventListener('blur', validarNumeroNodos);
+    document.getElementById('nodos').addEventListener('change', validarNumeroNodos);
 }
 
 function actualizarVisibilidadPanelManual() {
@@ -48,8 +49,19 @@ function validarNumeroNodos() {
     const input = document.getElementById('nodos');
     const valor = parseInt(input.value);
     
-    if (valor < 8) input.value = 8;
-    if (valor > 16) input.value = 16;
+    // Solo validar si hay un valor numérico válido
+    if (isNaN(valor) || input.value === '') {
+        input.value = 8; // Valor por defecto
+        actualizarLimitesAristaManual();
+        return;
+    }
+    
+    // Aplicar límites
+    if (valor < 8) {
+        input.value = 8;
+    } else if (valor > 16) {
+        input.value = 16;
+    }
     
     // Actualizar opciones de entrada manual
     actualizarLimitesAristaManual();
@@ -72,35 +84,48 @@ function actualizarLimitesAristaManual() {
 
 function agregarArista() {
     const n = parseInt(document.getElementById('nodos').value);
-    const origen = parseInt(document.getElementById('origen').value) - 1; // Convertir a 0-indexed
-    const destino = parseInt(document.getElementById('destino').value) - 1;
-    const capacidad = parseInt(document.getElementById('capacidad').value);
+    const origenInput = document.getElementById('origen').value.trim();
+    const destinoInput = document.getElementById('destino').value.trim();
+    const capacidadInput = document.getElementById('capacidad').value.trim();
 
-    // Validaciones
-    if (isNaN(origen) || isNaN(destino) || isNaN(capacidad)) {
-        mostrarAlerta('Por favor, completa todos los campos', 'warning');
+    // Validar campos vacíos
+    if (!origenInput || !destinoInput || !capacidadInput) {
+        mostrarAlerta('Por favor, completa todos los campos (Origen, Destino y Capacidad)', 'warning');
         return;
     }
 
+    const origen = parseInt(origenInput) - 1; // Convertir a 0-indexed
+    const destino = parseInt(destinoInput) - 1;
+    const capacidad = parseInt(capacidadInput);
+
+    // Validar que sean números válidos
+    if (isNaN(origen) || isNaN(destino) || isNaN(capacidad)) {
+        mostrarAlerta('Todos los campos deben ser números válidos', 'error');
+        return;
+    }
+
+    // Validar rango de nodos
     if (origen < 0 || origen >= n || destino < 0 || destino >= n) {
         mostrarAlerta(`Los nodos deben estar entre 1 y ${n}`, 'error');
         return;
     }
 
+    // Validar que no sea el mismo nodo
     if (origen === destino) {
         mostrarAlerta('El origen y destino deben ser diferentes', 'error');
         return;
     }
 
+    // Validar capacidad positiva
     if (capacidad <= 0) {
-        mostrarAlerta('La capacidad debe ser mayor a 0', 'error');
+        mostrarAlerta('La capacidad debe ser un número positivo mayor a 0', 'error');
         return;
     }
 
     // Verificar si ya existe la arista
     const aristaExistente = aristasManual.find(a => a.origen === origen && a.destino === destino);
     if (aristaExistente) {
-        mostrarAlerta('Ya existe una arista entre estos nodos', 'warning');
+        mostrarAlerta(`Ya existe una arista de ${origen + 1} → ${destino + 1}`, 'warning');
         return;
     }
 
@@ -116,7 +141,7 @@ function agregarArista() {
     // Focus en el primer campo para facilitar entrada continua
     document.getElementById('origen').focus();
     
-    mostrarAlerta(`Arista ${origen + 1} → ${destino + 1} agregada exitosamente`, 'success');
+    mostrarAlerta(`✓ Arista ${origen + 1} → ${destino + 1} (capacidad: ${capacidad}) agregada`, 'success');
 }
 
 function actualizarListaAristas() {
@@ -211,6 +236,15 @@ async function generarGrafo() {
 }
 
 function mostrarGrafo(grafo) {
+    console.log('Mostrando grafo:', grafo);
+    
+    // Verificar que D3 esté cargado
+    if (typeof d3 === 'undefined') {
+        console.error('D3.js no está cargado!');
+        mostrarAlerta('Error: librería D3.js no cargada', 'error');
+        return;
+    }
+    
     const svg = d3.select('#graph-svg');
     svg.selectAll('*').remove(); // Limpiar SVG anterior
 
@@ -219,22 +253,41 @@ function mostrarGrafo(grafo) {
     
     svg.attr('viewBox', `0 0 ${width} ${height}`);
 
-    // Crear datos para D3
-    const nodos = Array.from({length: grafo.nodos}, (_, i) => ({
-        id: i,
-        x: null,
-        y: null
-    }));
+    // Crear datos para D3 con posiciones iniciales dentro del área visible
+    const nodos = Array.from({length: grafo.nodos}, (_, i) => {
+        // Distribuir nodos en un círculo inicial para mejor visualización
+        const angle = (2 * Math.PI * i) / grafo.nodos;
+        const radius = Math.min(width, height) / 3;
+        return {
+            id: i,
+            x: width / 2 + radius * Math.cos(angle),
+            y: height / 2 + radius * Math.sin(angle)
+        };
+    });
+
+    console.log('Nodos creados:', nodos);
+    console.log('Aristas recibidas:', grafo.aristas);
 
     // Procesar aristas en forma unidireccional
     const enlaces = procesarAristas(grafo.aristas);
+    
+    console.log('Enlaces procesados para D3:', enlaces);
 
-    // Simulación de fuerza
+    // Verificar que tengamos datos para renderizar
+    if (!enlaces || enlaces.length === 0) {
+        console.warn('No hay enlaces para mostrar. Renderizando solo nodos.');
+        // Renderizar solo los nodos si no hay aristas
+    }
+
+    // Simulación de fuerza con configuración optimizada para visualización inmediata
     const simulation = d3.forceSimulation(nodos)
-        .force('link', d3.forceLink(enlaces).id(d => d.id).distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
+        .force('link', d3.forceLink(enlaces).id(d => d.id).distance(120))
+        .force('charge', d3.forceManyBody().strength(-400))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(35));
+        .force('collision', d3.forceCollide().radius(40))
+        .force('x', d3.forceX(width / 2).strength(0.1))
+        .force('y', d3.forceY(height / 2).strength(0.1))
+        .alphaDecay(0.02); // Desaceleración más lenta para mejor estabilización
 
     // Crear marcadores para flechas
     const defs = svg.append('defs');
@@ -284,13 +337,30 @@ function mostrarGrafo(grafo) {
             .on('end', dragended));
 
     node.append('circle')
-        .attr('r', 20);
+        .attr('r', 20)
+        .attr('fill', '#ffffff')
+        .attr('stroke', '#2563eb')
+        .attr('stroke-width', 3);
 
     node.append('text')
-        .text(d => d.id + 1);
+        .text(d => d.id + 1)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('fill', '#1e293b')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '14px');
+    
+    console.log('Nodos renderizados:', node.size());
 
-    // Actualizar posiciones en cada tick
+    // Actualizar posiciones en cada tick, manteniendo nodos dentro del área visible
     simulation.on('tick', () => {
+        // Restringir posiciones de nodos dentro del viewBox
+        nodos.forEach(d => {
+            const margin = 30; // Margen desde los bordes
+            d.x = Math.max(margin, Math.min(width - margin, d.x));
+            d.y = Math.max(margin, Math.min(height - margin, d.y));
+        });
+
         link.select('line')
             .attr('x1', d => d.source.x)
             .attr('y1', d => d.source.y)
@@ -303,6 +373,27 @@ function mostrarGrafo(grafo) {
 
         node.attr('transform', d => `translate(${d.x},${d.y})`);
     });
+
+    // Pre-calentar la simulación para posicionar nodos antes de mostrarlos
+    // Ejecutar varias iteraciones silenciosamente
+    for (let i = 0; i < 100; ++i) {
+        simulation.tick();
+    }
+    
+    // Renderizar posiciones iniciales
+    link.select('line')
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+    link.select('text')
+        .attr('x', d => (d.source.x + d.target.x) / 2)
+        .attr('y', d => (d.source.y + d.target.y) / 2 - 5);
+
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+    
+    console.log('Grafo renderizado y posicionado correctamente');
 
     // Funciones de drag
     function dragstarted(event, d) {

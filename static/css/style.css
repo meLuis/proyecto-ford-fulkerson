@@ -129,16 +129,19 @@ header p {
 
 .radio-group input[type="radio"] {
     width: auto;
-    margin-right: 8px;
+    margin: 0;
+    cursor: pointer;
 }
 
 .radio-group label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    gap: 8px;
     cursor: pointer;
     padding: 8px;
     border-radius: 6px;
     transition: background-color 0.3s ease;
+    font-weight: normal;
 }
 
 .radio-group label:hover {
@@ -218,17 +221,36 @@ header p {
     gap: 15px;
     align-items: end;
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .arista-input button {
     grid-column: 1 / -1;
     justify-self: center;
     margin-top: 10px;
+    width: 100%;
+    max-width: 250px;
+}
+
+.arista-input input {
+    width: 100%;
+}
+
+.arista-input input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.arista-input input::placeholder {
+    color: #cbd5e1;
+    font-style: italic;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .input-group label {
@@ -553,13 +575,14 @@ header p {
         grid-template-columns: 1fr;
     }
     
+    /* Mantener 3 columnas para los inputs de arista en pantallas medianas */
     .arista-input {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
     }
     
     .arista-input button {
-        grid-column: 1;
+        grid-column: 1 / -1;
         margin-top: 10px;
     }
 }
@@ -575,6 +598,17 @@ header p {
     
     .panel {
         padding: 15px;
+    }
+    
+    /* Solo en móviles pequeños colapsar a 1 columna */
+    .arista-input {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .arista-input button {
+        grid-column: 1;
+        margin-top: 10px;
     }
     
     .controls {
