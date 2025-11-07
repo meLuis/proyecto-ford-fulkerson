@@ -14,7 +14,6 @@ class GrafoJS {
     constructor(n) {
         this.n = n;
         this.adyacencia = Array.from({length: n}, () => []);
-        this.aristasOriginales = [];
     }
 
     agregarArista(u, v, capacidad) {
@@ -23,7 +22,6 @@ class GrafoJS {
         
         this.adyacencia[u].push(aristaAdelante);
         this.adyacencia[v].push(aristaReversa);
-        this.aristasOriginales.push({origen: u, destino: v, capacidad: capacidad});
     }
 
     obtenerAristasParaWeb() {
@@ -36,8 +34,7 @@ class GrafoJS {
                         origen: u,
                         destino: arista.destino,
                         flujo: flujo,
-                        capacidad: arista.capacidadOriginal,
-                        capacidadResidual: arista.capacidad
+                        capacidad: arista.capacidadOriginal
                     });
                 }
             }
@@ -106,8 +103,7 @@ class GrafoJS {
                 camino: nodosCamino,
                 cuelloBotella: cuelloBotella,
                 aristasCamino: camino.map(([u, v, _]) => [u, v]),
-                mensaje: `Iteración ${iteracion}: Camino encontrado [${nodosCamino.map(n => n + 1).join(' → ')}], cuello de botella = ${cuelloBotella}`,
-                aristasAntes: this.obtenerAristasParaWeb()
+                mensaje: `Iteración ${iteracion}: Camino encontrado [${nodosCamino.map(n => n + 1).join(' → ')}], cuello de botella = ${cuelloBotella}`
             };
 
             // Actualizar capacidades

@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import random
 from collections import deque
-import json
 
 app = Flask(__name__)
 
@@ -15,27 +14,15 @@ class Arista:
 class Grafo:
     def __init__(self, n):
         self.n = n
-        self.adyacencia = [[] for _ in range(n)]   # lista de adyacencia
-        self._aristas_originales = []              # lista de aristas originales (u, v, capacidad)
+        self.adyacencia = [[] for _ in range(n)]
 
     def agregar_arista(self, u, v, capacidad):
         arista_adelante = Arista(v, len(self.adyacencia[v]), capacidad, capacidad)
         arista_reversa = Arista(u, len(self.adyacencia[u]), 0, 0)
         self.adyacencia[u].append(arista_adelante)
         self.adyacencia[v].append(arista_reversa)
-        self._aristas_originales.append((u, v, capacidad))
-
-    def lista_flujos(self):
-        resultado = []
-        for u in range(self.n):
-            for arista in self.adyacencia[u]:
-                if arista.capacidad_original > 0:  # solo aristas originales (no las inversas)
-                    flujo = arista.capacidad_original - arista.capacidad
-                    resultado.append((u, arista.destino, flujo, arista.capacidad_original))
-        return resultado
 
     def obtener_aristas_para_web(self):
-        """Devuelve las aristas en formato para la web"""
         aristas = []
         for u in range(self.n):
             for arista in self.adyacencia[u]:
@@ -45,22 +32,20 @@ class Grafo:
                         'origen': u,
                         'destino': arista.destino,
                         'flujo': flujo,
-                        'capacidad': arista.capacidad_original,
-                        'capacidad_residual': arista.capacidad
+                        'capacidad': arista.capacidad_original
                     })
         return aristas
 
-    # Versión modificada del algoritmo para devolver paso a paso
     def edmonds_karp_detallado(self, fuente, sumidero):
         flujo_maximo = 0
         iteracion = 0
-        pasos = []  # Guardar cada paso del algoritmo
+        pasos = []
 
         while True:
             iteracion += 1
-            padre = [(-1, -1)] * self.n  # guarda (nodo anterior, índice de arista usada)
+            padre = [(-1, -1)] * self.n
             cola = deque([fuente])
-            padre[fuente] = (-2, -1)  # fuente marcada como visitada
+            padre[fuente] = (-2, -1)
 
             # BFS para encontrar un camino aumentante
             while cola:
@@ -69,7 +54,7 @@ class Grafo:
                     if arista.capacidad > 0 and padre[arista.destino][0] == -1:
                         padre[arista.destino] = (u, i)
                         cola.append(arista.destino)
-                        if arista.destino == sumidero:  # llegamos al sumidero
+                        if arista.destino == sumidero:
                             cola.clear()
                             break
 
@@ -84,7 +69,7 @@ class Grafo:
                 })
                 break
 
-            # Reconstruimos el camino encontrado
+            # Reconstruir camino
             camino = []
             v = sumidero
             cuello_botella = float("inf")
@@ -96,7 +81,6 @@ class Grafo:
                 v = u
             camino.reverse()
 
-            # Información del camino para la web
             nodos_camino = [fuente] + [v for (_, v, _) in camino]
             
             paso = {
@@ -105,8 +89,7 @@ class Grafo:
                 'camino': nodos_camino,
                 'cuello_botella': cuello_botella,
                 'aristas_camino': [(u, v) for (u, v, _) in camino],
-                'mensaje': f'Iteración {iteracion}: Camino encontrado {[n+1 for n in nodos_camino]}, cuello de botella = {cuello_botella}',
-                'aristas_antes': self.obtener_aristas_para_web()
+                'mensaje': f'Iteración {iteracion}: Camino encontrado {[n+1 for n in nodos_camino]}, cuello de botella = {cuello_botella}'
             }
 
             # Actualizar capacidades en la red residual
@@ -120,7 +103,6 @@ class Grafo:
 
             flujo_maximo += cuello_botella
 
-            # Estado después de la actualización
             paso['aristas_despues'] = self.obtener_aristas_para_web()
             pasos.append(paso)
 
@@ -158,13 +140,11 @@ class Grafo:
 
 def construir_grafo_aleatorio(n):
     g = Grafo(n)
-    # Conjunto para evitar aristas bidirectas
     aristas_agregadas = set()
     
     for u in range(n):
         for v in range(n):
             if u != v and random.random() < 0.3:
-                # Verificar que no exista ya una arista en cualquier dirección
                 if (u, v) not in aristas_agregadas and (v, u) not in aristas_agregadas:
                     capacidad = random.randint(1, 20)
                     g.agregar_arista(u, v, capacidad)
@@ -183,7 +163,7 @@ def generar_grafo():
     
     if tipo == 'aleatorio':
         g = construir_grafo_aleatorio(n)
-    else:  # manual
+    else:
         g = Grafo(n)
         aristas = data['aristas']
         for arista in aristas:
@@ -202,7 +182,6 @@ def calcular_flujo():
     fuente = data['fuente']
     sumidero = data['sumidero']
     
-    # Reconstruir el grafo
     g = Grafo(n)
     for arista in aristas_data:
         g.agregar_arista(arista['origen'], arista['destino'], arista['capacidad'])
