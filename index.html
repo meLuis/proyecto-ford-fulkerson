@@ -43,6 +43,18 @@
                 <div id="manual-panel" class="hidden">
                     <h3>✏️ Agregar Aristas Manualmente</h3>
                     
+                    <!-- Entrada de texto masiva -->
+                    <div class="texto-masivo-section">
+                        <label for="aristas-texto">Ingresa aristas (formato: origen,destino,capacidad):</label>
+                        <textarea id="aristas-texto" placeholder="Ejemplo:&#10;3,4,5&#10;4,5,9&#10;2,8,4&#10;1,6,10" rows="6"></textarea>
+                        <button id="procesar-texto" class="btn btn-secondary">📋 Procesar Lista</button>
+                        <p class="help-text">💡 Cada línea debe tener el formato: <code>origen,destino,capacidad</code></p>
+                    </div>
+
+                    <div class="separador">
+                        <span>O agregar una por una</span>
+                    </div>
+                    
                     <div class="arista-input">
                         <div class="input-group">
                             <label for="origen">Origen:</label>

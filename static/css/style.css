@@ -215,6 +215,82 @@ header p {
     margin-bottom: 5px;
 }
 
+/* Entrada de texto masiva */
+.texto-masivo-section {
+    margin-bottom: 20px;
+}
+
+.texto-masivo-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#aristas-texto {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 120px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s ease;
+}
+
+#aristas-texto:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#aristas-texto::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.help-text code {
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--primary-color);
+}
+
+.separador {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.separador::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.separador span {
+    background: var(--card-background);
+    padding: 0 15px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
 .arista-input {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;

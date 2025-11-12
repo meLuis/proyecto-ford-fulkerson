@@ -23,6 +23,7 @@ function inicializarEventos() {
     // Botones principales
     document.getElementById('generar-grafo').addEventListener('click', generarGrafo);
     document.getElementById('agregar-arista').addEventListener('click', agregarArista);
+    document.getElementById('procesar-texto').addEventListener('click', procesarTextoAristas);
     document.getElementById('calcular-flujo').addEventListener('click', calcularFlujo);
 
     // Controles de navegación
@@ -145,6 +146,86 @@ function agregarArista() {
     document.getElementById('origen').focus();
     
     mostrarAlerta(`✓ Arista ${origen + 1} → ${destino + 1} (capacidad: ${capacidad}) agregada`, 'success');
+}
+
+function procesarTextoAristas() {
+    const texto = document.getElementById('aristas-texto').value.trim();
+    
+    if (!texto) {
+        mostrarAlerta('Ingresa al menos una arista en el formato origen,destino,capacidad', 'warning');
+        return;
+    }
+    
+    const n = parseInt(document.getElementById('nodos').value);
+    const lineas = texto.split('\n').filter(linea => linea.trim() !== '');
+    
+    let aristasAgregadas = 0;
+    let errores = [];
+    
+    lineas.forEach((linea, index) => {
+        const lineaTrimmed = linea.trim();
+        const partes = lineaTrimmed.split(',').map(p => p.trim());
+        
+        if (partes.length !== 3) {
+            errores.push(`Línea ${index + 1}: Formato incorrecto. Debe ser origen,destino,capacidad`);
+            return;
+        }
+        
+        const origen = parseInt(partes[0]) - 1; // Convertir a 0-indexed
+        const destino = parseInt(partes[1]) - 1;
+        const capacidad = parseInt(partes[2]);
+        
+        // Validaciones
+        if (isNaN(origen) || isNaN(destino) || isNaN(capacidad)) {
+            errores.push(`Línea ${index + 1}: Todos los valores deben ser números`);
+            return;
+        }
+        
+        if (origen < 0 || origen >= n || destino < 0 || destino >= n) {
+            errores.push(`Línea ${index + 1}: Los nodos deben estar entre 1 y ${n}`);
+            return;
+        }
+        
+        if (origen === destino) {
+            errores.push(`Línea ${index + 1}: El origen y destino deben ser diferentes`);
+            return;
+        }
+        
+        if (capacidad <= 0) {
+            errores.push(`Línea ${index + 1}: La capacidad debe ser mayor a 0`);
+            return;
+        }
+        
+        // Verificar duplicados
+        const aristaExistente = aristasManual.find(a => a.origen === origen && a.destino === destino);
+        if (aristaExistente) {
+            errores.push(`Línea ${index + 1}: Arista ${origen + 1}→${destino + 1} ya existe`);
+            return;
+        }
+        
+        // Agregar arista
+        aristasManual.push({ origen, destino, capacidad });
+        aristasAgregadas++;
+    });
+    
+    // Actualizar UI
+    actualizarListaAristas();
+    
+    // Limpiar textarea si todo fue exitoso
+    if (errores.length === 0) {
+        document.getElementById('aristas-texto').value = '';
+    }
+    
+    // Mostrar resultados
+    if (aristasAgregadas > 0) {
+        mostrarAlerta(`✓ ${aristasAgregadas} arista(s) agregada(s) exitosamente`, 'success');
+    }
+    
+    if (errores.length > 0) {
+        const mensajeError = errores.slice(0, 3).join('<br>');
+        const masErrores = errores.length > 3 ? `<br>... y ${errores.length - 3} error(es) más` : '';
+        mostrarAlerta(mensajeError + masErrores, 'error');
+    }
 }
 
 function actualizarListaAristas() {
@@ -316,12 +397,12 @@ function mostrarAlerta(mensaje, tipo = 'info') {
     // Agregar al body
     document.body.appendChild(alerta);
     
-    // Auto-remover después de 4 segundos
+    // Auto-remover después de 5 segundos (más tiempo para leer errores)
     setTimeout(() => {
         if (alerta.parentElement) {
             alerta.remove();
         }
-    }, 4000);
+    }, 5000);
 }
 
 function mostrarLoading(botonId) {
